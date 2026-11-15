@@ -1,4 +1,5 @@
 import AppKit
+import OutpostKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -25,7 +26,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 480)
+        .frame(width: 520)
     }
 }
 
@@ -53,12 +54,63 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
 struct GeneralSettings: View {
     @Environment(AppModel.self) private var model
+    @State private var testingConnection = false
+    @State private var testResult: String?
 
     var body: some View {
         @Bindable var model = model
         Section("Server Connection") {
             TextField("Host or IP", text: $model.host)
+            TextField("User", text: $model.user)
             TextField("Port", value: $model.port, format: .number)
+        }
+
+        Section("Authentication (SSH Key)") {
+            HStack {
+                TextField("SSH Private Key", text: $model.identityFile)
+                Button("Choose…") {
+                    let panel = NSOpenPanel()
+                    panel.canChooseFiles = true
+                    panel.canChooseDirectories = false
+                    panel.allowsMultipleSelection = false
+                    panel.showsHiddenFiles = true
+                    panel.directoryURL = URL(fileURLWithPath: ("~/.ssh" as NSString).expandingTildeInPath)
+                    if panel.runModal() == .OK, let url = panel.url {
+                        model.identityFile = url.path
+                    }
+                }
+            }
+
+            Text("Outpost authenticates directly using your SSH key pair. No password is sent or stored.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Button("Test Connection") {
+                    testingConnection = true
+                    testResult = nil
+                    Task {
+                        let client = SSHClient(target: model.targetString, identityFile: model.identityFile, port: model.port)
+                        let result = await client.testConnection()
+                        testingConnection = false
+                        switch result {
+                        case .success(let kernel):
+                            testResult = "Connected! (\(kernel))"
+                        case .failure(let err):
+                            testResult = "Failed: \(err.localizedDescription)"
+                        }
+                    }
+                }
+                .disabled(testingConnection)
+
+                if testingConnection {
+                    ProgressView().controlSize(.small)
+                } else if let testResult {
+                    Text(testResult)
+                        .font(.caption)
+                        .foregroundStyle(testResult.hasPrefix("Connected") ? .green : .red)
+                }
+            }
         }
     }
 }

@@ -26,6 +26,14 @@ struct OutpostApp: App {
             }
         }
 
+        MenuBarExtra("Outpost", systemImage: "server.rack") {
+            MenuBarView()
+                .environment(model)
+                .themed()
+                .frame(width: 320, height: 380)
+        }
+        .menuBarExtraStyle(.window)
+
         Settings {
             SettingsView()
                 .environment(model)
@@ -41,7 +49,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = Updater.shared
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        SelfTest.requested || ProcessInfo.processInfo.environment["APP_SNAPSHOT"] != nil
+    }
 
     func applicationWillTerminate(_ notification: Notification) {
         if SelfTest.requested { exit(SelfTest.exitCode) }
