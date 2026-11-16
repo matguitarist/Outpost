@@ -24,7 +24,7 @@ swift test
 The server daemon is written in Rust, listening on `127.0.0.1:7654` and providing real-time telemetry with sub-5MB memory footprint.
 
 ```bash
-cd outpost-agent
+cd agent
 cargo build --release
 ```
 

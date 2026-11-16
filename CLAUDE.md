@@ -9,7 +9,7 @@ Shared rules for my Mac apps (build and check, design rules, skills, git):
 
 - `Sources/Outpost/` the app. `App.swift` has the window, menus, and the database location.
 - `Sources/OutpostKit/` rules and data logic with no SwiftUI. Tests in `Tests/OutpostKitTests/`.
-- `outpost-agent/` lightweight Linux Rust telemetry agent.
+- `agent/` the lightweight Linux Rust telemetry agent.
 - `Package.swift` a Swift package. There is no Xcode project.
 - `build.sh` builds, signs, and installs `~/Applications/Outpost.app`.
 - Release: `tools/release.sh <version>` (settings in `release.conf`, version in `Info.plist.in`). Use the mac-release skill.
