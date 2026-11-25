@@ -2,6 +2,26 @@
   "sourceLanguage": "en",
   "version": "1.0",
   "strings": {
+    "%@ Help": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide %@"
+          }
+        }
+      }
+    },
+    "%@ on GitHub": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sur GitHub"
+          }
+        }
+      }
+    },
     "1 left": {
       "localizations": {
         "fr": {
@@ -18,6 +38,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un moniteur dans la barre des menus macOS pour votre serveur personnel, conçu avec des matériaux fluides, une télémétrie en direct et sans superflu."
+          }
+        }
+      }
+    },
+    "About %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos d’%@"
           }
         }
       }
@@ -182,6 +212,16 @@
         }
       }
     },
+    "Report a Problem…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signaler un problème…"
+          }
+        }
+      }
+    },
     "Server Connection": {
       "localizations": {
         "fr": {
@@ -198,6 +238,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Réglages…"
+          }
+        }
+      }
+    },
+    "Show Log": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher le journal"
           }
         }
       }
@@ -438,6 +488,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Utilisateur"
+          }
+        }
+      }
+    },
+    "What’s New in %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveautés d’%@"
           }
         }
       }

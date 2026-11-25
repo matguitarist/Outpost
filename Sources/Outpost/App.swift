@@ -20,10 +20,10 @@ struct OutpostApp: App {
         .commands {
             SidebarCommands()
             CommandGroup(replacing: .newItem) {}
-            CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { Updater.shared.checkForUpdates() }
-                    .disabled(!Updater.shared.isAvailable)
-            }
+            PageCommands(pages: SidebarItem.allCases, title: \.title) { model.sidebar = $0 }
+            StandardCommands(app: "Outpost", repository: "matguitarist/Outpost",
+                             updates: AppUpdates(isAvailable: Updater.shared.isAvailable) { Updater.shared.checkForUpdates() },
+                             log: .page { model.sidebar = .log })
         }
 
         MenuBarExtra("Outpost", systemImage: "server.rack") {

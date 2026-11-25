@@ -25,6 +25,9 @@ enum SelfTest {
 
             let file = (try? String(contentsOf: Store.logURL, encoding: .utf8)) ?? ""
             check("the log file has the line", file.contains("Self-test line"))
+            let issue = RepositoryLinks(repository: "matguitarist/Outpost").newIssue(app: "Outpost").absoluteString
+            check("Help › Report a Problem opens a new GitHub issue with the version and macOS filled in",
+                  issue.hasPrefix("https://github.com/matguitarist/Outpost/issues/new?body=") && issue.contains("macOS"), issue)
 
             // Verify settings tabs
             for tab in SettingsTab.allCases {
