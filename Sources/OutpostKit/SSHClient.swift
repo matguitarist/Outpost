@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 
 public enum SSHError: LocalizedError, Equatable {
     case command(status: Int32, message: String)
@@ -77,8 +78,7 @@ public actor SSHClient {
     }
 
     public nonisolated func disconnectNow() {
-        guard let child = try? Spawn.launch("/usr/bin/ssh", sshArguments(extra: ["-O", "exit"]), stdout: .null, stderr: .null) else { return }
-        _ = Spawn.wait(child.pid)
+        _ = try? Shell.runSync("/usr/bin/ssh", sshArguments(extra: ["-O", "exit"]), options: Self.options(stdout: .discard, stderr: .discard))
     }
 
     public func runRemote(_ command: String) async throws -> String {
@@ -153,50 +153,25 @@ public actor SSHClient {
         )
     }
 
+    /// ssh starts the way Terminal starts it: it disclaims Outpost as its responsible process, so macOS
+    /// judges its network access on its own and Local Network privacy (tied to each build) never blocks it.
+    private static func options(stdout: Shell.Destination = .capture, stderr: Shell.Destination = .capture) -> Shell.Options {
+        Shell.Options(stdout: stdout, stderr: stderr, disclaimsResponsibility: true)
+    }
+
+    /// `background` is for `ssh -f`: the master it leaves running keeps its stdout and stderr, so they go
+    /// to nothing and to a file instead of pipes, and the result comes when the first ssh exits.
     private static func run(_ arguments: [String], background: Bool = false) async throws -> String {
-        try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                let errorFile = FileManager.default.temporaryDirectory.appending(path: "outpost-ssh-\(UUID().uuidString).txt")
-                let child: Spawn.Child
-                do {
-                    child = try Spawn.launch(
-                        "/usr/bin/ssh",
-                        arguments,
-                        stdout: background ? .null : .pipe,
-                        stderr: background ? .file(errorFile.path(percentEncoded: false)) : .pipe
-                    )
-                } catch {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                var output = Data(), errors = Data()
-                if let out = child.stdout, let err = child.stderr {
-                    let group = DispatchGroup()
-                    final class Box: @unchecked Sendable { var data = Data() }
-                    let box = Box()
-                    group.enter()
-                    DispatchQueue.global().async {
-                        box.data = err.readDataToEndOfFile()
-                        group.leave()
-                    }
-                    output = out.readDataToEndOfFile()
-                    group.wait()
-                    errors = box.data
-                }
-
-                let status = Spawn.wait(child.pid)
-                if background {
-                    errors = (try? Data(contentsOf: errorFile)) ?? Data()
-                    try? FileManager.default.removeItem(at: errorFile)
-                }
-
-                if status == 0 {
-                    continuation.resume(returning: String(decoding: output, as: UTF8.self))
-                } else {
-                    continuation.resume(throwing: SSHError.command(status: status, message: String(decoding: errors, as: UTF8.self)))
-                }
-            }
+        let errorFile = FileManager.default.temporaryDirectory.appending(path: "outpost-ssh-\(UUID().uuidString).txt")
+        defer { if background { try? FileManager.default.removeItem(at: errorFile) } }
+        let output = try await Shell.run(
+            "/usr/bin/ssh", arguments,
+            options: background ? options(stdout: .discard, stderr: .file(errorFile)) : options()
+        )
+        guard output.succeeded else {
+            let errors = background ? ((try? Data(contentsOf: errorFile)) ?? Data()) : output.stderr
+            throw SSHError.command(status: output.status, message: String(decoding: errors, as: UTF8.self))
         }
+        return output.text
     }
 }
