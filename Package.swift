@@ -9,7 +9,7 @@ let package = Package(
         // The Activity Log's viewer, shared by my Mac apps.
         .package(url: "https://github.com/matguitarist/LogKit", from: "0.6.0"),
         // Runs ssh, shared by my Mac apps.
-        .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.1.1"),
+        .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.2.2"),
     ],
     targets: [
         // Rules and data logic with no SwiftUI, so tests run without the app.

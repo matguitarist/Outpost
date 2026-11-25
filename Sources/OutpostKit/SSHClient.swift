@@ -155,22 +155,23 @@ public actor SSHClient {
 
     /// ssh starts the way Terminal starts it: it disclaims Outpost as its responsible process, so macOS
     /// judges its network access on its own and Local Network privacy (tied to each build) never blocks it.
-    private static func options(stdout: Shell.Destination = .capture, stderr: Shell.Destination = .capture) -> Shell.Options {
-        Shell.Options(stdout: stdout, stderr: stderr, disclaimsResponsibility: true)
+    private static func options(stdout: Shell.Destination = .capture, stderr: Shell.Destination = .capture,
+                                readsBackStderr: Bool = false) -> Shell.Options {
+        Shell.Options(stdout: stdout, stderr: stderr, disclaimsResponsibility: true, readsBackStderr: readsBackStderr)
     }
 
     /// `background` is for `ssh -f`: the master it leaves running keeps its stdout and stderr, so they go
-    /// to nothing and to a file instead of pipes, and the result comes when the first ssh exits.
+    /// to nothing and to a file instead of pipes, and the result comes when the first ssh exits. ProcessKit
+    /// reads that file back into `output.stderr`, so a failed connection still says why.
     private static func run(_ arguments: [String], background: Bool = false) async throws -> String {
         let errorFile = FileManager.default.temporaryDirectory.appending(path: "outpost-ssh-\(UUID().uuidString).txt")
         defer { if background { try? FileManager.default.removeItem(at: errorFile) } }
         let output = try await Shell.run(
             "/usr/bin/ssh", arguments,
-            options: background ? options(stdout: .discard, stderr: .file(errorFile)) : options()
+            options: background ? options(stdout: .discard, stderr: .file(errorFile), readsBackStderr: true) : options()
         )
         guard output.succeeded else {
-            let errors = background ? ((try? Data(contentsOf: errorFile)) ?? Data()) : output.stderr
-            throw SSHError.command(status: output.status, message: String(decoding: errors, as: UTF8.self))
+            throw SSHError.command(status: output.status, message: String(decoding: output.stderr, as: UTF8.self))
         }
         return output.text
     }
