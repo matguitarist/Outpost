@@ -37,6 +37,17 @@ enum Snapshot {
                 }
             }
 
+            if only == nil || only?.contains("whats-new") == true {
+                WhatsNewState.shared.shown = .sample
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    try? await Task.sleep(for: .seconds(1))
+                    capture(to: "\(dir)/whats-new-\(mode).png", window: NSApp.windows.first { $0.canBecomeMain && !$0.isSheet }?.attachedSheet)
+                }
+                WhatsNewState.shared.shown = nil
+                try? await Task.sleep(for: .seconds(0.5))
+            }
+
             if only == nil || only?.contains("settings") == true {
                 openSettings()
                 try? await Task.sleep(for: .seconds(1))

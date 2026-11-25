@@ -11,6 +11,7 @@ struct OutpostApp: App {
         Window("Outpost", id: "main") {
             ContentView()
                 .environment(model)
+                .whatsNew(app: "Outpost", repository: "matguitarist/Outpost")
                 .themed()
                 .overlay { if GridOverlay.enabled { GridOverlay() } }
                 .frame(minWidth: 720, minHeight: 480)
