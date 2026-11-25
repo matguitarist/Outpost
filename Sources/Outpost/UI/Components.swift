@@ -1,6 +1,8 @@
 import AppKit
-import OutpostKit
 import SwiftUI
+
+// Shared by my Mac apps (sync-mac-tools): change it everywhere or nowhere.
+// Views that belong to one app go in their own files.
 
 /// A symbol on a tinted rounded square, like the icons in System Settings.
 struct IconTile: View {
@@ -41,7 +43,7 @@ struct PageHeader<Actions: View>: View {
     }
 }
 
-/// A small label under an item: status, tag, or badge.
+/// A small capsule label under a row or beside a title: a version, a source, a state.
 struct Tag: View {
     let text: String
     let symbol: String
@@ -58,7 +60,7 @@ struct Tag: View {
     }
 }
 
-/// A rounded card for the Overview page.
+/// A rounded card.
 struct Card<Content: View>: View {
     @ViewBuilder var content: Content
 
@@ -76,5 +78,5 @@ extension Int64 {
 }
 
 extension UInt64 {
-    var bytesText: String { ByteCountFormatter.string(fromByteCount: Int64(self), countStyle: .file) }
+    var bytesText: String { ByteCountFormatter.string(fromByteCount: Int64(clamping: self), countStyle: .file) }
 }
